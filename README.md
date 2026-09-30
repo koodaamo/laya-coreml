@@ -23,7 +23,15 @@ times; the requested 10× improvement was not achieved.
 
 ## Run the demo
 
-Apple Silicon · macOS 15+ · Python 3.11–3.13.
+Apple Silicon · macOS 15+ · Python 3.11–3.14.
+
+> **Python 3.14 caveat.** On Python 3.14 this package depends on `coremltools==9.1.dev1`,
+> an unreleased development build. Released `coremltools` 9.0 has no cp314 wheels and its
+> sdist ships none of the native `libcoremlpython` / `libmilstoragepython` /
+> `libmodelpackage` binaries, so on 3.14 it would install but fail to load or save Core ML
+> models. 9.1.dev1 is currently the only release with cp314 wheels, so 3.14 users accept a
+> prerelease dependency until Apple ships a stable coremltools that covers 3.14. Python
+> 3.11–3.13 keeps using released `coremltools>=9,<10`.
 
 ```bash
 pip install 'laya-coreml[demo]'

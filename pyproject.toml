@@ -1,11 +1,11 @@
 [build-system]
-# Keep Core Metadata 2.4 compatibility with the validated Twine 6 release path.
-requires = ["hatchling==1.31.0"]
-build-backend = "hatchling.build"
+# uv_build emits Core Metadata 2.4, which the validated Twine 6 release path accepts.
+requires = ["uv_build>=0.12.21,<0.13"]
+build-backend = "uv_build"
 
 [project]
 name = "laya-coreml"
-version = "0.1.1"
+version = "0.2.0"
 description = "Local Laya typed decisions on Apple Core ML and Neural Engine, with a live Snake demo"
 keywords = ["coreml", "neural-engine", "laya", "decision-model", "apple-silicon", "local-ai"]
 classifiers = [
@@ -13,15 +13,38 @@ classifiers = [
   "Intended Audience :: Developers",
   "Operating System :: MacOS",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11,<3.15"
 license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 readme = "README.md"
-dependencies = ["coremltools>=9,<10", "numpy>=1.26,<2.2", "tokenizers>=0.21,<1", "huggingface-hub>=0.34,<2", "safetensors>=0.6"]
+# coremltools 9.0 stops at cp313 wheels; its sdist ships no native
+# libcoremlpython/libmilstoragepython/libmodelpackage, so a source build yields a
+# coremltools that imports but cannot load or save Core ML models. 9.1.dev1 is the
+# only release with cp314 wheels.
+dependencies = [
+  "coremltools>=9,<10; python_version < '3.14'",
+  "coremltools==9.1.dev1; python_version >= '3.14'",
+  # numpy 2.2 and older stop at cp313 wheels.
+  "numpy>=1.26,<2.2; python_version < '3.14'",
+  "numpy>=2.3.2; python_version >= '3.14'",
+  "tokenizers>=0.21,<1",
+  "huggingface-hub>=0.34,<2",
+  "safetensors>=0.6",
+]
 
 [project.optional-dependencies]
-convert = ["torch==2.7.0", "safetensors>=0.6"]
+# torch only ships cp314 wheels from 2.10 onwards.
+convert = [
+  "torch==2.7.0; python_version < '3.14'",
+  "torch>=2.10; python_version >= '3.14'",
+  "safetensors>=0.6",
+]
 dev = ["pytest>=8", "ruff>=0.12", "build>=1", "psutil>=6"]
 compare = ["laya-mlx==0.2.0"]
 research = ["kmeans1d==0.4.0"]
@@ -39,11 +62,9 @@ Documentation = "https://github.com/mizorewww/laya-coreml#readme"
 Issues = "https://github.com/mizorewww/laya-coreml/issues"
 Benchmarks = "https://github.com/mizorewww/laya-coreml/blob/main/docs/ANE_BENCHMARKS.md"
 
-[tool.hatch.build.targets.wheel]
-packages = ["laya_coreml"]
-
-[tool.hatch.build.targets.sdist]
-include = ["/laya_coreml", "/README.md", "/LICENSE", "/NOTICE", "/pyproject.toml"]
+[tool.uv.build-backend]
+module-name = "laya_coreml"
+module-root = ""
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
